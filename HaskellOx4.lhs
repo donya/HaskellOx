@@ -1,12 +1,24 @@
 HaskellOx Version 4
 Donya Quick
-Last modified: 12-June-2016
+Last modified: 04-July-2018
 Updated to use Euterpea 2 and HSoM libraries
+
+WINDOWS INSTRUCTIONS
+You can double-click build.bat to compile to executable.
+Compiling manually from command line: ghc HaskellOx4.lhs -O2 -rtsopts -threaded
+Execute in GUI mode: HaskellOx4.exe +RTS -N2
+Execute command-line only: HaskellOx4.exe basic +RTS -N2
+
+MAC INSTRUCTIONS
+On Mac, the MUI-based version of the program will not work due to
+threading issues in the GLUT library (a dependency of HSoM).
+Compile from a terminal with: ghc HaskellOx4.lhs -O2 -rtsopts -threaded
+Execute command-line only version: ./HaskellOx4 basic +RTS -N2
 
 > {-# LANGUAGE Arrows #-}
 
 > module Main where
-> import Euterpea 
+> import Euterpea
 > import Euterpea.IO.MIDI.MidiIO hiding (Time)
 > import FRP.UISF.UISF hiding (Time)
 > import FRP.UISF
@@ -48,8 +60,8 @@ main = do
 	let m1 = MediaModule midiFunctions
 	    m2 = MediaModule userInterfaceFunctions
     openChannel [m1,m2]
- 
- 
+
+
 =====================
 
 MIDI Back-end
@@ -66,7 +78,7 @@ Stop operation (to be reused for the console interface)
 MIDI back-end termination
 
 > stopOpMidi :: (a, b, Bool) -> IO ()
-> stopOpMidi _ = handleCtrlC $ terminateMidi where 
+> stopOpMidi _ = handleCtrlC $ terminateMidi where
 >     handleCtrlC :: IO a -> IO a
 >     handleCtrlC op = onException op terminateMidi
 
@@ -80,13 +92,13 @@ The main function to be looped by the MediaModule
 >         f xs = Just $ map (\m -> (0, Std $ m)) xs
 >         g Nothing = []
 >         g (Just (t,ms)) = ms
->     msgs <- sequence $ map getMidiInput devsIn -- get MIDI messages coming 
+>     msgs <- sequence $ map getMidiInput devsIn -- get MIDI messages coming
 >     let outVal = f $ concatMap g msgs
 >     sequence $ map (\d -> sendMidiOut d outVal) devsOut
 >     return ()
 
 > sendMidiOut :: OutputDeviceID -> Maybe [(Time, MidiMessage)] -> IO ()
-> sendMidiOut dev ms = outputMidi dev >> 
+> sendMidiOut dev ms = outputMidi dev >>
 >     maybe (return ()) (mapM_ (\(t,m) -> deliverMidiEvent dev (0, m))) ms
 
 > getMidiInput :: InputDeviceID -> IO (Maybe (Time, [Message])) -- Codec.Midi message format
@@ -109,7 +121,7 @@ MediaModule for it
 Stop operation
 
 > stopTerminal :: (a,b,Bool) -> IO ()
-> stopTerminal _ = 
+> stopTerminal _ =
 >     putStrLn "\nClosing...bye!\n\n"
 
 Command formats for the user to add/remove connected devices.
@@ -132,27 +144,27 @@ Main function to be looped by the MediaModule
 >     putStrLn "Command format: Add/Remove deviceID | Exit"
 >     putStr "Command: "
 >     s <- getLine
->     let cstr = reads s 
->     if null cstr then putStrLn "Bad command, please try again." >> updateTerminal devs (devsIn, devsOut, stop) 
+>     let cstr = reads s
+>     if null cstr then putStrLn "Bad command, please try again." >> updateTerminal devs (devsIn, devsOut, stop)
 >     else do
 >         let (c,_) = head cstr
->         case c of Exit -> return (devsIn, devsOut, True) 
+>         case c of Exit -> return (devsIn, devsOut, True)
 >                   Add i -> addDev i devs devsIn devsOut
 >                   Remove i -> removeDev i devsIn devsOut
 
 Helper code to add/remove and display devices
 (this is a ugly due to the unsafeIn/Out IDs - would be worth redoing later)
 
-> addDev i devs devsIn devsOut = 
+> addDev i devs devsIn devsOut =
 >     let inID = unsafeInputID i
 >         outID = unsafeOutputID i
 >         isInput = elem inID $ map fst $ fst devs
 >         isOutput = elem outID $ map fst $ snd devs
->     in  case (isInput, isOutput) of (True, _) -> return (nub (inID:devsIn), devsOut, False) 
->                                     (False, True) -> return (devsIn, nub (outID:devsOut), False) 
+>     in  case (isInput, isOutput) of (True, _) -> return (nub (inID:devsIn), devsOut, False)
+>                                     (False, True) -> return (devsIn, nub (outID:devsOut), False)
 >                                     (False,False) -> return (devsIn, devsOut, False)
 
-> removeDev i devsIn devsOut = 
+> removeDev i devsIn devsOut =
 >      let f1 = filter (/= unsafeInputID i)
 >          f2 = filter (/= unsafeOutputID i)
 >      in  return (f1 devsIn, f2 devsOut, False)
@@ -161,7 +173,7 @@ Helper code to add/remove and display devices
 >   let f (devid, devname) = "  "++show devid ++ "\t" ++ name devname ++ "\n"
 >       strIn = concatMap f devsIn
 >       strOut = concatMap f devsOut
->   putStrLn "\nInput devices: " >> putStrLn strIn 
+>   putStrLn "\nInput devices: " >> putStrLn strIn
 >   putStrLn "Output devices: " >> putStrLn strOut
 
 
@@ -171,7 +183,7 @@ MUI version of interface
 
 Note: the MediaModule has to be built inside the main function
 since it needs access to the device list via getAllDevices.
-  
+
 > haskellOxUI (inDevs, outDevs) ioOp = proc _ -> do
 >   inVal <- title "Input" $ checkGroup $ map nameFix inDevs -< ()
 >   outVal <- title "Output" $ checkGroup $ map nameFix outDevs -< ()
@@ -189,4 +201,3 @@ since it needs access to the device list via getAllDevices.
 >     return ()
 
 > muiFun devs ioOp = runMUI (oxParams ioOp) (haskellOxUI devs ioOp)
-
