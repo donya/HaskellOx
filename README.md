@@ -1,10 +1,17 @@
 # HaskellOx
 A MIDI message routing tool written in Haskell. 
 
-This program was originally written to benchmark the performance of MIDI message handling in Euterpea with the 
-UISF library for graphics in Haskell. There are command-line and GUI versions of the program.
-The pre-compiled executables may not work on your operating system if you have 
-a different version that they were compiled with. 
+This program was originally written to benchmark the performance 
+of MIDI message handling in Euterpea with the UISF library for graphics 
+in Haskell. There are command-line and GUI versions of the program.
+The pre-compiled executables may not work on your operating system if 
+you have a different version that they were compiled with. 
+
+Precompiled versions:
+HaskellOx4.exe - for recent Windows 10 and recent machines (64-bit)
+HaskellOx2016.exe - try this if the one above doesn't work and you have 
+                    an older Windows machine or old Win10 version.
+HaskellOx (no file extension) - for Macs (OS X).
 
 WINDOWS INSTRUCTIONS: 
 You can double-click build.bat to compile to executable.
