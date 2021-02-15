@@ -15,7 +15,8 @@ HaskellOx (no file extension) - for Macs (OS X).
 
 WINDOWS INSTRUCTIONS: 
 You can double-click build.bat to compile to executable.
-Compiling manually from command line: ghc HaskellOx4.lhs -O2 -rtsopts -threaded
+Compiling manually from command line: ghc HaskellOx4.lhs -O2 
+(Please note that threading is no longer supported)
 Execute in GUI mode: HaskellOx4.exe +RTS -N2
 Execute command-line only: HaskellOx4.exe basic +RTS -N2
 
